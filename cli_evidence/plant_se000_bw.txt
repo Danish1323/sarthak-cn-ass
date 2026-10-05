@@ -1,0 +1,118 @@
+
+%SYS-5-CONFIG_I: Configured from console by console
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to up
+
+%DUAL-5-NBRCHANGE: IP-EIGRP 100: Neighbor 10.100.3.2 (GigabitEthernet0/2) is up: new adjacency
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/0, changed state to up
+
+%DUAL-5-NBRCHANGE: IP-EIGRP 100: Neighbor 10.100.4.2 (Serial0/0/0) is up: new adjacency
+enable
+Plant-Router#terminal length 0
+                      ^
+% Invalid input detected at '^' marker.
+	
+Plant-Router#show ip ospf neighbor
+
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+1.1.1.1           1   2WAY/DROTHER    00:00:30    10.100.1.1      GigabitEthernet0/1
+Plant-Router#enable
+Plant-Router#terminal length 0
+                      ^
+% Invalid input detected at '^' marker.
+	
+Plant-Router#show ip eigrp topology
+IP-EIGRP Topology Table for AS 100/ID(10.100.4.1)
+
+Codes: P - Passive, A - Active, U - Update, Q - Query, R - Reply,
+       r - Reply status
+
+P 10.20.10.0/24, 1 successors, FD is 2816
+         via Connected, GigabitEthernet0/0
+P 10.30.10.0/24, 1 successors, FD is 3072
+         via 10.100.3.2 (3072/2816), GigabitEthernet0/2
+         via 10.100.4.2 (537856/2816), Serial0/0/0
+P 10.100.1.0/30, 1 successors, FD is 51200
+         via Redistributed (51200/0)
+P 10.100.2.0/30, 1 successors, FD is 51456
+         via Rstatic (51456/51200)
+         via Rstatic (563200/51200)
+P 10.100.3.0/30, 1 successors, FD is 2816
+         via Connected, GigabitEthernet0/2
+P 10.100.4.0/30, 1 successors, FD is 537600
+         via Connected, Serial0/0/0
+Plant-Router#enable
+Plant-Router#terminal length 0
+                      ^
+% Invalid input detected at '^' marker.
+	
+Plant-Router#show ip route eigrp
+     10.0.0.0/8 is variably subnetted, 10 subnets, 3 masks
+D       10.30.10.0/24 [90/3072] via 10.100.3.2, 00:00:28, GigabitEthernet0/2
+D EX    10.100.2.0/30 [170/51456] via 10.100.3.2, 00:00:30, GigabitEthernet0/2
+
+Plant-Router#enable
+Plant-Router#terminal length 0
+                      ^
+% Invalid input detected at '^' marker.
+	
+Plant-Router#show interfaces GigabitEthernet0/1
+GigabitEthernet0/1 is up, line protocol is up (connected)
+  Hardware is CN Gigabit Ethernet, address is 00e0.a32a.8802 (bia 00e0.a32a.8802)
+  Description: WAN_to_HQ_Edge
+  Internet address is 10.100.1.2/30
+  MTU 1500 bytes, BW 1000000 Kbit, DLY 10 usec,
+     reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA, loopback not set
+  Keepalive set (10 sec)
+  Full-duplex, 100Mb/s, media type is RJ45
+  output flow-control is unsupported, input flow-control is unsupported
+  ARP type: ARPA, ARP Timeout 04:00:00, 
+  Last input 00:00:08, output 00:00:05, output hang never
+  Last clearing of "show interface" counters never
+  Input queue: 0/75/0 (size/max/drops); Total output drops: 0
+  Queueing strategy: fifo
+  Output queue :0/40 (size/max)
+  5 minute input rate 7 bits/sec, 0 packets/sec
+  5 minute output rate 10 bits/sec, 0 packets/sec
+     4 packets input, 268 bytes, 0 no buffer
+     Received 0 broadcasts, 0 runts, 0 giants, 0 throttles
+     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort
+     0 watchdog, 1017 multicast, 0 pause input
+
+Plant-Router#nable
+Translating "nable"
+% Unknown command or computer name, or unable to find computer address
+
+Plant-Router#terminal length 0
+                      ^
+% Invalid input detected at '^' marker.
+	
+Plant-Router#show interfaces Serial0/0/0
+Serial0/0/0 is up, line protocol is up (connected)
+  Hardware is HD64570
+  Description: WAN_Secondary_to_Warehouse
+  Internet address is 10.100.4.1/30
+  MTU 1500 bytes, BW 100000 Kbit, DLY 20000 usec,
+     reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation HDLC, loopback not set, keepalive set (10 sec)
+  Last input never, output never, output hang never
+  Last clearing of "show interface" counters never
+  Input queue: 0/75/0 (size/max/drops); Total output drops: 0
+  Queueing strategy: weighted fair
+  Output queue: 0/1000/64/0 (size/max total/threshold/drops)
+     Conversations  0/0/256 (active/max active/max total)
+     Reserved Conversations 0/0 (allocated/max allocated)
+     Available Bandwidth 75000 kilobits/sec
+  5 minute input rate 18 bits/sec, 0 packets/sec
+  5 minute output rate 22 bits/sec, 0 packets/sec
+     17 packets input, 1168 bytes, 0 no buffer
+     Received 0 broadcasts, 0 runts, 0 giants, 0 throttles
+     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort
+     15 packets output, 1079 bytes, 0 underruns
+     0 output errors, 0 collisions, 1 interface resets
+ --More-- 

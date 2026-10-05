@@ -1,0 +1,119 @@
+
+HQ-Edge-Router(config-router)#neighbor 198.51.100.1 description SECONDARY-ISP2
+                                                    ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router(config-router)#neighbor 198.51.100.1 route-map RM-ISP2-IN in
+                                                     ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router(config-router)#network 10.10.10.0 mask 255.255.255.0
+HQ-Edge-Router(config-router)#ip prefix-list PARTNER-PREFIX permit 198.18.50.0/24
+                              ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router(config-router)#ip prefix-list PARTNER-PREFIX permit 0.0.0.0/0
+                              ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router(config-router)#route-map RM-ISP2-IN permit 10
+                               ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router(config-router)#match ip address prefix-list PARTNER-PREFIX
+                              ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router(config-router)#end
+HQ-Edge-Router#write memory
+Building configuration...
+[OK]
+HQ-Edge-Router#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+%LINK-5-CHANGED: Interface GigabitEthernet0/1, changed state to up
+
+%LINK-5-CHANGED: Interface GigabitEthernet0/2, changed state to up
+
+%SYS-5-CONFIG_I: Configured from console by console
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/0, changed state to up
+
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/1, changed state to up
+%BGP-5-ADJCHANGE: neighbor 198.51.100.1 Up
+%BGP-5-ADJCHANGE: neighbor 203.0.113.1 Up
+enable
+HQ-Edge-Router#terminal length 0
+                        ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router#show ip ospf neighbor
+
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           1   2WAY/DROTHER    00:00:37    10.100.1.2      GigabitEthernet0/1
+3.3.3.3           1   2WAY/DROTHER    00:00:39    10.100.2.2      GigabitEthernet0/2
+HQ-Edge-Router#enable
+HQ-Edge-Router#terminal length 0
+                        ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router#show ip route ospf
+HQ-Edge-Router#enable
+HQ-Edge-Router#terminal length 0
+                        ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router#show ip bgp summary
+BGP router identifier 203.0.113.2, local AS number 65000
+BGP table version is 4, main routing table version 6
+3 network entries using 396 bytes of memory
+3 path entries using 156 bytes of memory
+2/2 BGP path/bestpath attribute entries using 368 bytes of memory
+3 BGP AS-PATH entries using 72 bytes of memory
+0 BGP route-map cache entries using 0 bytes of memory
+0 BGP filter-list cache entries using 0 bytes of memory
+Bitfield cache entries: current 1 (at peak 1) using 32 bytes of memory
+BGP using 1024 total bytes of memory
+BGP activity 3/0 prefixes, 3/0 paths, scan interval 60 secs
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+203.0.113.1     4 65001       3       2        4    0    0 00:00:13        4
+198.51.100.1    4 65002       3       2        4    0    0 00:00:13        4
+
+HQ-Edge-Router#enable
+HQ-Edge-Router#terminal length 0
+                        ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router#show ip bgp
+BGP table version is 4, local router ID is 203.0.113.2
+Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+              r RIB-failure, S Stale
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 8.8.8.8/32        203.0.113.1              0     0     0 65001 i
+*> 10.10.10.0/24     0.0.0.0                  0     0 32768 i
+*> 198.18.50.0/24    198.51.100.1             0     0     0 65002 i
+
+HQ-Edge-Router#enable
+HQ-Edge-Router#terminal length 0
+                        ^
+% Invalid input detected at '^' marker.
+	
+HQ-Edge-Router#show ip route bgp
+B    8.8.8.8 [20/0] via 203.0.113.1, 00:00:00
+B    198.18.50.0/24 [20/0] via 198.51.100.1, 00:00:00
+
+HQ-Edge-Router#

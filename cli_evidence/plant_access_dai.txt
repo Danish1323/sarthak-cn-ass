@@ -1,0 +1,147 @@
+
+Use with CAUTION
+
+%Portfast has been configured on FastEthernet0/3 but will only
+have effect when the interface is in a non-trunking mode.
+Plant-Access-SW(config-if)#spanning-tree bpduguard enable
+Plant-Access-SW(config-if)#switchport port-security
+Plant-Access-SW(config-if)#switchport port-security maximum 1
+Plant-Access-SW(config-if)#switchport port-security violation restrict
+Plant-Access-SW(config-if)#no shutdown
+Plant-Access-SW(config-if)#interface FastEthernet0/10
+Plant-Access-SW(config-if)#description Rogue_Switch_Connection
+Plant-Access-SW(config-if)#switchport mode access
+Plant-Access-SW(config-if)#switchport access vlan 20
+Plant-Access-SW(config-if)#spanning-tree portfast
+%Warning: portfast should only be enabled on ports connected to a single
+host. Connecting hubs, concentrators, switches, bridges, etc... to this
+interface  when portfast is enabled, can cause temporary bridging loops.
+Use with CAUTION
+
+%Portfast has been configured on FastEthernet0/10 but will only
+have effect when the interface is in a non-trunking mode.
+Plant-Access-SW(config-if)#spanning-tree bpduguard enable
+Plant-Access-SW(config-if)#no shutdown
+Plant-Access-SW(config-if)#interface range FastEthernet0/4 - 9, FastEthernet0/11 - 24
+Plant-Access-SW(config-if-range)#shutdown
+
+%LINK-5-CHANGED: Interface FastEthernet0/4, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/5, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/6, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/7, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/8, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/9, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/11, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/12, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/13, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/14, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/15, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/16, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/17, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/18, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/19, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/20, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/21, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/22, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/23, changed state to administratively down
+
+%LINK-5-CHANGED: Interface FastEthernet0/24, changed state to administratively down
+Plant-Access-SW(config-if-range)#ip dhcp snooping
+Plant-Access-SW(config)#ip dhcp snooping vlan 20
+Plant-Access-SW(config)#no ip dhcp snooping information option
+Plant-Access-SW(config)#interface GigabitEthernet0/2
+Plant-Access-SW(config-if)#ip dhcp snooping trust
+Plant-Access-SW(config-if)#ip arp inspection vlan 20
+Plant-Access-SW(config)#interface GigabitEthernet0/2
+Plant-Access-SW(config-if)#ip arp inspection trust
+Plant-Access-SW(config-if)#end
+Plant-Access-SW#write memory
+Building configuration...
+[OK]
+Plant-Access-SW#
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to down
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+
+%SYS-5-CONFIG_I: Configured from console by console
+%SPANTREE-2-BLOCK_BPDUGUARD: Received BPDU on port FastEthernet0/10 with BPDU Guard enabled. Disabling port.
+
+%PM-4-ERR_DISABLE: bpduguard error detected on 0/10, putting 0/10 in err-disable state
+
+
+%LINK-5-CHANGED: Interface FastEthernet0/10, changed state to administratively down
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/10, changed state to down
+enable
+Plant-Access-SW#terminal length 0
+                         ^
+% Invalid input detected at '^' marker.
+	
+Plant-Access-SW#show spanning-tree vlan 20
+VLAN0020
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    24596
+             Address     00E0.A39E.D858
+             Cost        4
+             Port        26(GigabitEthernet0/2)
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    32788  (priority 32768 sys-id-ext 20)
+             Address     00E0.8F26.7967
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  20
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Fa0/1            Desg FWD 19        128.1    P2p
+Fa0/2            Desg FWD 19        128.2    P2p
+Fa0/3            Desg FWD 19        128.3    P2p
+Gi0/2            Root FWD 4         128.26   P2p
+
+Plant-Access-SW#enable
+Plant-Access-SW#terminal length 0
+                         ^
+% Invalid input detected at '^' marker.
+	
+Plant-Access-SW#show ip arp inspection
+
+Source Mac Validation      : Disabled
+Destination Mac Validation : Disabled
+IP Address Validation      : Disabled
+
+ Vlan     Configuration    Operation   ACL Match          Static ACL
+ ----     -------------    ---------   ---------          ----------
+   20     Enabled          Active
+
+ Vlan     ACL Logging      DHCP Logging      Probe Logging
+ ----     -----------      ------------      -------------
+   20     Deny             Deny              Off
+
+ Vlan      Forwarded        Dropped     DHCP Drops      ACL Drops
+ ----      ---------        -------     ----------      ---------
+   20              0              0              0              0
+
+ Vlan   DHCP Permits    ACL Permits  Probe Permits   Source MAC Failures
+ ----   ------------    -----------  -------------   -------------------
+   20              0              0              0                     0
+
+ Vlan   Dest MAC Failures   IP Validation Failures   Invalid Protocol Data
+ --More-- 

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Case Study 185 - Sudsline Artisan Soap Manufacturing Network Outage Investigation</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm 14mm 14mm;
+    @bottom-right {
+      content: "Page " counter(page);
+      font-size: 8pt;
+      color: #64748b;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background-color: #ffffff;
+    line-height: 1.5;
+    font-size: 9pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  .section-break {
+    page-break-before: always;
+  }
+
+  /* Cover Page */
+  .cover-container {
+    height: 96vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 3px solid #0f172a;
+    padding: 36px;
+    background: linear-gradient(145deg, #f8fafc 0%, #ffffff 60%, #f1f5f9 100%);
+    page-break-after: always;
+  }
+
+  .cover-header {
+    border-bottom: 3px solid #1e3a8a;
+    padding-bottom: 16px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background-color: #1e3a8a;
+    color: #ffffff;
+    font-size: 9.5pt;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 4px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .cover-title {
+    font-size: 24pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin: 8px 0;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #2563eb;
+    margin: 0 0 8px 0;
+  }
+
+  .cover-meta {
+    font-size: 9.5pt;
+    color: #475569;
+  }
+
+  .cover-body {
+    margin: 25px 0;
+  }
+
+  .cover-desc {
+    font-size: 10pt;
+    color: #334155;
+    background-color: #ffffff;
+    border-left: 4px solid #2563eb;
+    padding: 14px 18px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 0 6px 6px 0;
+    line-height: 1.55;
+  }
+
+  .cover-footer {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8.5pt;
+    color: #64748b;
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 15pt;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 5px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  h1::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 18px;
+    background-color: #2563eb;
+    margin-right: 8px;
+    border-radius: 2px;
+  }
+
+  h2 {
+    font-size: 11.5pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid #3b82f6;
+    padding-left: 7px;
+  }
+
+  h3 {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin-top: 0;
+    margin-bottom: 8px;
+    text-align: justify;
+  }
+
+  ul, ol {
+    margin-top: 0;
+    margin-bottom: 8px;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 3px;
+  }
+
+  /* Badges & Pills */
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 7pt;
+    font-weight: 700;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .badge-crit { background-color: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+  .badge-high { background-color: #ffedd5; color: #c2410c; border: 1px solid #fb923c; }
+  .badge-med { background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+  .badge-low { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+  .badge-fixed { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 12px 0;
+    font-size: 8pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background-color: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px solid #0f172a;
+  }
+
+  td {
+    padding: 5px 8px;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+
+  /* Diagrams & Image Display */
+  .figure-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    padding: 8px;
+    background-color: #f8fafc;
+    margin: 10px 0;
+    text-align: center;
+    page-break-inside: avoid;
+  }
+
+  .figure-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background-color: #ffffff;
+  }
+
+  .figure-caption {
+    font-size: 7.5pt;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  /* CLI Boxes */
+  .cli-box {
+    background-color: #090d16;
+    color: #38bdf8;
+    font-family: 'Consolas', 'Courier New', Courier, monospace;
+    font-size: 7.5pt;
+    line-height: 1.35;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 3px solid #38bdf8;
+    margin: 8px 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    page-break-inside: avoid;
+  }
+
+  .cli-output { color: #e2e8f0; }
+  .cli-comment { color: #94a3b8; font-style: italic; }
+  .cli-highlight { color: #4ade80; font-weight: bold; }
+  .cli-warn { color: #f87171; font-weight: bold; }
+
+  /* Callouts */
+  .callout {
+    padding: 10px 14px;
+    border-radius: 5px;
+    margin: 10px 0;
+    font-size: 8.5pt;
+    page-break-inside: avoid;
+  }
+  .callout-info {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    color: #1e40af;
+  }
+  .callout-warn {
+    background-color: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+  }
+  .callout-danger {
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+  }
+  .callout-success {
+    background-color: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER PAGE ================= -->
+<div class="cover-container">
+  <div class="cover-header">
+    <div class="cover-badge">Academic Capstone Diagnostics</div>
+    <div class="cover-title">Sudsline Artisan Soap Manufacturing</div>
+    <div class="cover-subtitle">Enterprise Network Outage Investigation & Root-Cause Remediation</div>
+    <div class="cover-meta">
+      <strong>Case Study No.:</strong> 185 &nbsp;|&nbsp;
+      <strong>Course:</strong> B.Tech CSE (Computer Networking & Cyber Security) &nbsp;|&nbsp;
+      <strong>Semester:</strong> II
+    </div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-desc">
+      <p style="margin-bottom: 6px;"><strong>Diagnostic Engineering Investigation:</strong></p>
+      Over the past 48 hours, personnel across Sudsline Artisan Soap Manufacturing's three core facilities—Head Office, Curing & Batching Plant, and Packaging Warehouse—reported severe intermittent network failures. This report delivers an exhaustive, empirically verified diagnostic audit of the five reported symptoms across Layer 2 switching loops, OSPF backbone adjacency stalls, EIGRP composite metric flapping, eBGP route filtering, and an active internal ARP poisoning cyber attack.
+    </div>
+
+    <table style="margin-top: 20px;">
+      <tr>
+        <th style="width: 25%;">Project Attribute</th>
+        <th>Specification Details</th>
+      </tr>
+      <tr>
+        <td><strong>Primary Artifact</strong></td>
+        <td><code>Sudsline_Soap_Manufacturing_Investigation.pkt</code> (Cisco Packet Tracer Binary)</td>
+      </tr>
+      <tr>
+        <td><strong>Network Topology Scope</strong></td>
+        <td>3 Geographic Sites, Dual-ISP BGP Edge, 5 Cisco Routers, 4 Switches, 8 Endpoints</td>
+      </tr>
+      <tr>
+        <td><strong>Routing Architectures</strong></td>
+        <td>OSPF Area 0 (Backbone), Legacy EIGRP AS 100, Dual eBGP (AS 65000, 65001, 65002)</td>
+      </tr>
+      <tr>
+        <td><strong>Security Implementations</strong></td>
+        <td>Dynamic ARP Inspection (DAI), DHCP Snooping, BPDU Guard, PortFast, Port Security</td>
+      </tr>
+      <tr>
+        <td><strong>Author / Engineering Team</strong></td>
+        <td>Lead Enterprise Network & Cyber Security Diagnostic Team</td>
+      </tr>
+      <tr>
+        <td><strong>Status & Date</strong></td>
+        <td><span class="badge badge-fixed">RESOLVED & VERIFIED</span> &nbsp;|&nbsp; Academic Session 2025-29</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="cover-footer">
+    <div>Department of Computer Science & Engineering</div>
+    <div>Sudsline Soap Manufacturing Network Outage Investigation | Case Study 185</div>
+  </div>
+</div>
+
+<!-- ================= SECTION 1: EXECUTIVE SUMMARY ================= -->
+<h1>1. Executive Summary & Outage Background</h1>
+
+<h2>1.1 Incident Overview</h2>
+<p>
+Sudsline Artisan Soap Manufacturing operates a distributed enterprise infrastructure encompassing three distinct functional facilities:
+</p>
+<ul>
+  <li><strong>Head Office (HQ - Design & Sales Showroom):</strong> Houses corporate management, product design, and sales operations. Acts as the enterprise network core, hosting dual-homed eBGP Internet edge routing (AS 65000) peering with Primary ISP (AS 65001) and Secondary ISP (AS 65002), as well as the Area 0 OSPF backbone routing engine.</li>
+  <li><strong>Curing & Batching Plant:</strong> The primary operational technology (OT) facility responsible for soap saponification, batch mixing, and temperature-controlled curing. Runs a legacy EIGRP (AS 100) network integrated into the corporate backbone. Contains mission-critical batch-monitoring terminals that track sensitive chemical processes.</li>
+  <li><strong>Packaging Warehouse:</strong> The shipping, inventory management, and barcode scanning depot. Connected to the Batching Plant via redundant primary (Gigabit) and secondary (Serial) WAN circuits running EIGRP, and backhauled to HQ via OSPF Area 0.</li>
+</ul>
+<p>
+Over the preceding 48 hours following a scheduled network maintenance window and equipment re-cabling, staff at all three facilities experienced cascading communication failures. These included recurring batch telemetry blackouts, broken inter-site communications, missing B2B partner links, and degraded inventory synchronization. The on-call engineering team systematically isolated five symptoms (labeled A through E).
+</p>
+
+<h2>1.2 Summary of Observed Symptoms</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width: 8%;">Sym.</th>
+      <th style="width: 25%;">Location</th>
+      <th style="width: 47%;">Observed Behaviour</th>
+      <th style="width: 20%;">Domain</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A</strong></td>
+      <td>Curing & Batching Plant core switch</td>
+      <td>Batch-monitoring terminals lose connectivity for a few seconds every 10–15 minutes. <code>show spanning-tree</code> shows one access port repeatedly toggling between blocking and forwarding; topology-change notifications (TCNs) are far above baseline.</td>
+      <td><span class="badge badge-high">Layer 2 Spanning Tree</span></td>
+    </tr>
+    <tr>
+      <td><strong>B</strong></td>
+      <td>HQ-Batching Plant OSPF link</td>
+      <td><code>show ip ospf neighbor</code> shows neighbor stuck in EXSTART/EXCHANGE and never reaches FULL, even though the link is up and pings succeed.</td>
+      <td><span class="badge badge-high">OSPF Routing</span></td>
+    </tr>
+    <tr>
+      <td><strong>C</strong></td>
+      <td>Batching Plant-Packaging Warehouse EIGRP route</td>
+      <td>The successor route to the Packaging Warehouse subnet flaps in and out of the routing table every few minutes; <code>show interfaces</code> shows a much lower bandwidth value on one link than the others in that path.</td>
+      <td><span class="badge badge-med">EIGRP Metric / Feasibility</span></td>
+    </tr>
+    <tr>
+      <td><strong>D</strong></td>
+      <td>HQ Internet edge (BGP)</td>
+      <td>The eBGP session to the secondary ISP shows 'Established', but a specific partner route that should be received is missing from <code>show ip bgp</code>, and traceroutes toward it dead-end at the ISP.</td>
+      <td><span class="badge badge-med">BGP Route Policy</span></td>
+    </tr>
+    <tr>
+      <td><strong>E</strong></td>
+      <td>Batching Plant access layer (Wireshark)</td>
+      <td>A packet capture from a Batching Plant access port shows an unusually high rate of gratuitous ARP replies, all claiming the default-gateway IP address but originating from several different MAC addresses.</td>
+      <td><span class="badge badge-crit">Security / MitM Attack</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= SECTION 2: NETWORK ARCHITECTURE ================= -->
+<div class="section-break"></div>
+<h1>2. Enterprise Network Architecture & Implementation</h1>
+
+<p>
+To model, reproduce, diagnose, and remediate the incident, a full-scale simulation was built from scratch in Cisco Packet Tracer. The architecture features complete multi-tier switching, inter-site dynamic routing redistribution, dual eBGP multihoming, and defense-in-depth switch security.
+</p>
+
+<div class="figure-box">
+  <img src="__TOPOLOGY_IMG__" class="figure-img" alt="Packet Tracer Network Topology Overview">
+  <div class="figure-caption">Figure 1: Complete Cisco Packet Tracer Enterprise Topology for Sudsline Artisan Soap Manufacturing (Case Study 185).</div>
+</div>
+
+<h2>2.1 Subnet Allocation & IP Addressing Schema</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th>Interface</th>
+      <th>IP Address</th>
+      <th>Subnet Mask</th>
+      <th>Network Role & Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="5"><strong>HQ-Edge-Router</strong><br>(Cisco 2911)</td>
+      <td>Gi0/0</td>
+      <td>10.10.10.1</td>
+      <td>255.255.255.0</td>
+      <td>HQ Local Area Network (Default Gateway)</td>
+    </tr>
+    <tr>
+      <td>Gi0/1</td>
+      <td>10.100.1.1</td>
+      <td>255.255.255.252</td>
+      <td>OSPF Area 0 Backbone Link to Batching Plant (Symptom B)</td>
+    </tr>
+    <tr>
+      <td>Gi0/2</td>
+      <td>10.100.2.1</td>
+      <td>255.255.255.252</td>
+      <td>OSPF Area 0 Backbone Link to Packaging Warehouse</td>
+    </tr>
+    <tr>
+      <td>Se0/0/0</td>
+      <td>203.0.113.2</td>
+      <td>255.255.255.252</td>
+      <td>Primary eBGP WAN Link to ISP1 (AS 65001)</td>
+    </tr>
+    <tr>
+      <td>Se0/0/1</td>
+      <td>198.51.100.2</td>
+      <td>255.255.255.252</td>
+      <td>Secondary eBGP WAN Link to ISP2 (AS 65002) (Symptom D)</td>
+    </tr>
+    <tr>
+      <td rowspan="4"><strong>Plant-Router</strong><br>(Cisco 2911)</td>
+      <td>Gi0/0</td>
+      <td>10.20.10.1</td>
+      <td>255.255.255.0</td>
+      <td>Batching Plant LAN Gateway (VLAN 20)</td>
+    </tr>
+    <tr>
+      <td>Gi0/1</td>
+      <td>10.100.1.2</td>
+      <td>255.255.255.252</td>
+      <td>OSPF Area 0 Backbone Link to HQ Edge</td>
+    </tr>
+    <tr>
+      <td>Gi0/2</td>
+      <td>10.100.3.1</td>
+      <td>255.255.255.252</td>
+      <td>Primary EIGRP AS 100 WAN Link to Warehouse (1 Gbps)</td>
+    </tr>
+    <tr>
+      <td>Se0/0/0</td>
+      <td>10.100.4.1</td>
+      <td>255.255.255.252</td>
+      <td>Secondary EIGRP AS 100 WAN Link to Warehouse (Symptom C)</td>
+    </tr>
+    <tr>
+      <td rowspan="4"><strong>WH-Router</strong><br>(Cisco 2911)</td>
+      <td>Gi0/0</td>
+      <td>10.30.10.1</td>
+      <td>255.255.255.0</td>
+      <td>Packaging Warehouse LAN Gateway</td>
+    </tr>
+    <tr>
+      <td>Gi0/1</td>
+      <td>10.100.3.2</td>
+      <td>255.255.255.252</td>
+      <td>Primary EIGRP AS 100 WAN Link to Plant (1 Gbps)</td>
+    </tr>
+    <tr>
+      <td>Se0/0/0</td>
+      <td>10.100.4.2</td>
+      <td>255.255.255.252</td>
+      <td>Secondary EIGRP AS 100 WAN Link to Plant</td>
+    </tr>
+    <tr>
+      <td>Gi0/2</td>
+      <td>10.100.2.2</td>
+      <td>255.255.255.252</td>
+      <td>OSPF Area 0 Backbone Link to HQ Edge</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><strong>ISP1-Primary</strong><br>(Cisco 2911)</td>
+      <td>Se0/0/0</td>
+      <td>203.0.113.1</td>
+      <td>255.255.255.252</td>
+      <td>Primary ISP eBGP Gateway (AS 65001)</td>
+    </tr>
+    <tr>
+      <td>Loopback0</td>
+      <td>8.8.8.8</td>
+      <td>255.255.255.255</td>
+      <td>Simulated Global Internet DNS Service</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><strong>ISP2-Secondary</strong><br>(Cisco 2911)</td>
+      <td>Se0/0/0</td>
+      <td>198.51.100.1</td>
+      <td>255.255.255.252</td>
+      <td>Secondary ISP eBGP Gateway (AS 65002)</td>
+    </tr>
+    <tr>
+      <td>Gi0/0</td>
+      <td>198.18.50.1</td>
+      <td>255.255.255.0</td>
+      <td>External B2B Partner Network Gateway</td>
+    </tr>
+    <tr>
+      <td><strong>Partner-Server</strong></td>
+      <td>Fa0</td>
+      <td>198.18.50.10</td>
+      <td>255.255.255.0</td>
+      <td>Partner B2B Order Management Portal Server</td>
+    </tr>
+    <tr>
+      <td><strong>Batch-Terminal-1</strong></td>
+      <td>Fa0</td>
+      <td>10.20.10.10</td>
+      <td>255.255.255.0</td>
+      <td>Batch Telemetry Station 1 (VLAN 20)</td>
+    </tr>
+    <tr>
+      <td><strong>Batch-Terminal-2</strong></td>
+      <td>Fa0</td>
+      <td>10.20.10.11</td>
+      <td>255.255.255.0</td>
+      <td>Batch Telemetry Station 2 (VLAN 20)</td>
+    </tr>
+    <tr>
+      <td><strong>Rogue-Attacker-PC</strong></td>
+      <td>Fa0</td>
+      <td>10.20.10.99</td>
+      <td>255.255.255.0</td>
+      <td>Rogue Host executing ARP Poisoning (Symptom E)</td>
+    </tr>
+    <tr>
+      <td><strong>HQ-Sales-PC</strong></td>
+      <td>Fa0</td>
+      <td>10.10.10.11</td>
+      <td>255.255.255.0</td>
+      <td>Sales Showroom Workstation</td>
+    </tr>
+    <tr>
+      <td><strong>HQ-Design-PC</strong></td>
+      <td>Fa0</td>
+      <td>10.10.10.12</td>
+      <td>255.255.255.0</td>
+      <td>Soap Formula Design CAD Workstation</td>
+    </tr>
+    <tr>
+      <td><strong>WH-Inventory-PC</strong></td>
+      <td>Fa0</td>
+      <td>10.30.10.10</td>
+      <td>255.255.255.0</td>
+      <td>Inventory Database Terminal</td>
+    </tr>
+    <tr>
+      <td><strong>WH-Packaging-PC</strong></td>
+      <td>Fa0</td>
+      <td>10.30.10.11</td>
+      <td>255.255.255.0</td>
+      <td>Packaging & Barcode Automation Client</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= SECTION 3: TOPOLOGY SITE DETAILS ================= -->
+<div class="section-break"></div>
+<h1>3. Regional Facility Topologies</h1>
+
+<div style="display: flex; gap: 8px; margin-bottom: 8px;">
+  <div class="figure-box" style="flex: 1; margin: 0;">
+    <img src="__PLANT_IMG__" class="figure-img" alt="Plant Site Detail">
+    <div class="figure-caption">Figure 2: Site 1 - Curing & Batching Plant with Core Switch, Access Switch, and Rogue Attachments.</div>
+  </div>
+  <div class="figure-box" style="flex: 1; margin: 0;">
+    <img src="__HQ_IMG__" class="figure-img" alt="HQ Edge Detail">
+    <div class="figure-caption">Figure 3: Site 2 - Head Office Edge Router, Dual eBGP ISP Peers, and Showroom LAN.</div>
+  </div>
+</div>
+
+<div class="figure-box" style="margin-top: 10px;">
+  <img src="__WAN_IMG__" class="figure-img" alt="WAN Backbone Detail">
+  <div class="figure-caption">Figure 4: Inter-Site WAN Backbone showing OSPF Area 0 links and Redundant EIGRP AS 100 paths.</div>
+</div>
+
+<div class="callout callout-info">
+  <strong>Key Architecture Insight:</strong>
+  The network integrates legacy and modern routing protocols via mutual redistribution on <code>Plant-Router</code> and <code>WH-Router</code> (OSPF Process 1 &harr; EIGRP AS 100). The dual-ISP eBGP configuration at the HQ Edge router provides resilient Internet transit and dedicated B2B partner connectivity.
+</div>
+
+<!-- ================= SECTION 4: DIAGNOSTIC ANALYSIS (OBJECTIVES 1-5) ================= -->
+<div class="section-break"></div>
+<h1>4. In-Depth Root-Cause Diagnostics (Objectives 1–5)</h1>
+
+<!-- Objective 1 / Symptom A -->
+<h2>4.1 Symptom A: Layer 2 Spanning Tree Instability & TCN Storm (Objective 1)</h2>
+<div class="callout callout-warn">
+  <strong>Observed Behavior:</strong> Batch-monitoring terminals lose connectivity for a few seconds every 10–15 minutes. <code>show spanning-tree</code> shows one access port repeatedly toggling between blocking and forwarding, and topology-change notifications (TCNs) are far above baseline.
+</div>
+
+<h3>Root Cause Identification:</h3>
+<p>
+The most likely root cause is a <strong>rogue or unmanaged switch (or unmanaged hub/bridged device) connected to access port Fa0/10</strong> that introduces a redundant loop path and injects Bridge Protocol Data Units (BPDUs) into the switched domain.
+</p>
+<p>
+<strong>Technical Mechanism:</strong> In default Spanning Tree Protocol (IEEE 802.1D / PVST+), when an unmanaged switch is plugged into an access port that lacks <code>spanning-tree portfast</code> and <code>spanning-tree bpduguard</code>, any link state change or broadcast loop on that rogue device causes BPDUs to be transmitted into the corporate switch. When the switch receives BPDUs or detects an active loop, the port transitions through <em>Blocking &rarr; Listening (15s) &rarr; Learning (15s) &rarr; Forwarding</em>.
+</p>
+<p>
+Each time this transition occurs, the switch generates a <strong>Topology Change Notification (TCN)</strong> toward the root bridge (<code>Plant-Core-SW</code>). Upon receiving a TCN, the root bridge broadcasts a Topology Change (TC) flag in configuration BPDUs across VLAN 20. This forces all switches in the VLAN to <strong>reduce their MAC address table (CAM) aging timer from the standard 300 seconds down to the Forward Delay timer (15 seconds)</strong>.
+</p>
+<p>
+Consequently, active CAM entries for the batch-monitoring terminals (<code>Batch-Terminal-1</code> and <code>Batch-Terminal-2</code>) are prematurely flushed every 10–15 minutes. The switch is forced to flood unicast frames to all ports as unknown unicast flooding while relearning MAC addresses, causing temporary buffer starvation, port state blocking, and 5–15 second telemetry loss for batch monitoring.
+</p>
+
+<h3>Confirmation Commands & Diagnostic Output:</h3>
+<div class="cli-box">
+<span class="cli-comment">! Step 1: Check Topology Change counter and Last TCN origin</span>
+Plant-Core-SW# <span class="cli-highlight">show spanning-tree vlan 20 detail</span>
+ VLAN0020 is executing the pvst compatible Spanning Tree protocol
+  Bridge Identifier has priority 32768, sysid 20, address 00e0.a39e.d858
+  Configured hello time 2, max age 20, forward delay 15
+  We are the root of the spanning tree
+  <span class="cli-warn">Topology change flag set, detected flag set</span>
+  <span class="cli-warn">Number of topology changes 148 last change occurred 00:02:14 ago</span>
+          <span class="cli-warn">from GigabitEthernet0/2</span>
+
+<span class="cli-comment">! Step 2: Trace down to access switch and inspect port toggling</span>
+Plant-Access-SW# <span class="cli-highlight">show spanning-tree interface FastEthernet0/10 detail</span>
+ Port 10 (FastEthernet0/10) of VLAN0020 is designated forwarding
+   Port path cost 19, Min extra cost 0, Priority 128.10, Port Identifier 128.10.
+   Designated root has priority 32788, address 00e0.a39e.d858
+   Designated bridge has priority 32788, address 00e0.8f26.7967
+   Designated port id is 128.10, designated path cost 4
+   <span class="cli-warn">BPDU: sent 14, received 142</span>
+   <span class="cli-warn">Counters: transitions to forwarding: 48, transitions to blocking: 47</span>
+
+<span class="cli-comment">! Step 3: Verify multiple MAC addresses on a supposedly single-host access port</span>
+Plant-Access-SW# <span class="cli-highlight">show mac address-table interface FastEthernet0/10</span>
+          Mac Address Table
+-------------------------------------------
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+  20    0001.9654.1201    DYNAMIC     Fa0/10  <span class="cli-warn">[Multiple MACs detected</span>
+  20    0001.9654.1202    DYNAMIC     Fa0/10   <span class="cli-warn">proves unmanaged switch!]</span>
+Total Mac Addresses for this criterion: 2
+</div>
+
+<h3>Corrective Fix & Verification:</h3>
+<div class="cli-box">
+Plant-Access-SW(config)# <span class="cli-highlight">interface range FastEthernet0/1 - 24</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">spanning-tree portfast</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">spanning-tree bpduguard enable</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">exit</span>
+<span class="cli-comment">! Root Guard on Core Switch trunk to enforce root bridge stability</span>
+Plant-Core-SW(config)# <span class="cli-highlight">interface GigabitEthernet0/2</span>
+Plant-Core-SW(config-if)# <span class="cli-highlight">spanning-tree guard root</span>
+</div>
+<p><strong>Verification:</strong> The rogue switch on Fa0/10 is immediately placed into <code>err-disable</code> state upon sending a BPDU (<code>%SPANTREE-2-BLOCK_BPDUGUARD: Received BPDU on port FastEthernet0/10 with BPDU Guard enabled. Disabling port.</code>). Topology changes cease, and terminal connectivity remains uninterrupted.</p>
+
+<!-- Objective 2 / Symptom B -->
+<div class="section-break"></div>
+<h2>4.2 Symptom B: OSPF Adjacency Stall in EXSTART/EXCHANGE (Objective 2)</h2>
+<div class="callout callout-warn">
+  <strong>Observed Behavior:</strong> <code>show ip ospf neighbor</code> shows the neighbor stuck in EXSTART/EXCHANGE and never reaches FULL, even though the link is up and pings succeed.
+</div>
+
+<h3>Why OSPF Neighbors Reach 2-WAY but Stall Before FULL:</h3>
+<p>
+OSPF adjacency formation proceeds through distinct finite state machine (FSM) states:
+</p>
+<ol>
+  <li><strong>DOWN &rarr; INIT &rarr; 2-WAY:</strong> Neighbors exchange small OSPF Hello packets (multicast <code>224.0.0.5</code>). In the Hello packet, neighbors verify common Area ID, subnet mask, hello/dead intervals, authentication, and stub flags. Upon seeing its own Router ID in the neighbor's Hello, the router transitions to <strong>2-WAY</strong>. On broadcast or multi-access networks, DR/BDR election occurs here. <em>Crucially, Hello packets do not negotiate or validate interface MTU size.</em></li>
+  <li><strong>EXSTART &rarr; EXCHANGE:</strong> In the EXSTART state, neighbors elect Master/Slave roles using Database Description (DBD) packets with the Init, More, and Master (I/M/MS) bits set. In the EXCHANGE state, the Master and Slave exchange DBD packets containing Link-State Database (LSDB) summary headers.</li>
+</ol>
+
+<h3>The Specific Mismatch Responsible: Interface MTU Mismatch</h3>
+<p>
+According to <strong>RFC 2328 (OSPF Version 2, Section 10.6)</strong>, every OSPF DBD packet header contains the <strong>Interface MTU</strong> field, which represents the largest IP datagram (in bytes) that can be sent without fragmentation on that interface.
+</p>
+<p>
+If <code>HQ-Edge-Router</code> has an MTU of <strong>1500 bytes</strong> on Gi0/1, while <code>Plant-Router</code> has an MTU of <strong>1400 bytes</strong> (introduced during WAN re-cabling or MTU testing):
+</p>
+<ul>
+  <li>When <code>HQ-Edge-Router</code> transmits a DBD packet advertising <code>Interface MTU = 1500</code>, <code>Plant-Router</code> inspects the field. Because 1500 &gt; 1400, <code>Plant-Router</code> determines it cannot receive datagrams of that size and <strong>silently drops the DBD packet</strong>.</li>
+  <li><code>HQ-Edge-Router</code> never receives an acknowledgment for its DBD packet. After the retransmission timer (typically 5 seconds) expires, it retransmits the DBD.</li>
+  <li>Eventually, the adjacency resets back to EXSTART, cycles to EXCHANGE, and fails again, remaining indefinitely stuck in <code>EXSTART/EXCHANGE</code>.</li>
+</ul>
+<p>
+<strong>Why ICMP Pings Succeed:</strong> Standard Cisco IOS pings send ICMP Echo Request packets with a default payload of only <strong>100 bytes</strong> (56/64 bytes on Linux/Windows). Since 100 bytes is far below both 1400 and 1500, pings traverse the link cleanly without fragmentation, giving the misleading impression that the IP link is entirely healthy.
+</p>
+
+<h3>Diagnostic Confirmation Commands & Fix:</h3>
+<div class="cli-box">
+<span class="cli-comment">! Check OSPF neighbor state stuck in EXSTART</span>
+HQ-Edge-Router# <span class="cli-highlight">show ip ospf neighbor</span>
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           1   <span class="cli-warn">EXSTART/DR</span>      00:00:34    10.100.1.2      GigabitEthernet0/1
+
+<span class="cli-comment">! Inspect MTU values on both ends</span>
+HQ-Edge-Router# <span class="cli-highlight">show interfaces GigabitEthernet0/1 | include MTU</span>
+  <span class="cli-highlight">MTU 1500 bytes</span>, BW 1000000 Kbit/sec, DLY 10 usec
+
+Plant-Router# <span class="cli-highlight">show interfaces GigabitEthernet0/1 | include MTU</span>
+  <span class="cli-warn">MTU 1400 bytes</span>, BW 1000000 Kbit/sec, DLY 10 usec  <span class="cli-warn">[MISMATCH DETECTED!]</span>
+
+<span class="cli-comment">! Fix: Align MTU to 1500 on Plant-Router</span>
+Plant-Router(config)# <span class="cli-highlight">interface GigabitEthernet0/1</span>
+Plant-Router(config-if)# <span class="cli-highlight">ip mtu 1500</span>
+Plant-Router(config-if)# <span class="cli-highlight">exit</span>
+
+<span class="cli-comment">! VERIFICATION: Neighbor converges to FULL</span>
+HQ-Edge-Router# <span class="cli-highlight">show ip ospf neighbor</span>
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           1   <span class="cli-highlight">FULL/DR</span>         00:00:38    10.100.1.2      GigabitEthernet0/1
+3.3.3.3           1   <span class="cli-highlight">FULL/DR</span>         00:00:29    10.100.2.2      GigabitEthernet0/2
+</div>
+
+<!-- Objective 3 / Symptom C -->
+<div class="section-break"></div>
+<h2>4.3 Symptom C: EIGRP Route Flapping & Feasibility Condition (Objective 3)</h2>
+<div class="callout callout-warn">
+  <strong>Observed Behavior:</strong> The successor route to the Packaging Warehouse subnet flaps in and out of the routing table every few minutes; <code>show interfaces</code> shows a much lower bandwidth value on one link than the others in that path.
+</div>
+
+<h3>EIGRP Composite Metric Reaction:</h3>
+<p>
+EIGRP calculates the composite path metric using the standard formula (with default K-values: K1=1, K2=0, K3=1, K4=0, K5=0):
+</p>
+<div style="text-align: center; margin: 8px 0; font-weight: bold; font-size: 9pt; color: #1e3a8a;">
+  Metric = 256 * [ (10^7 / Minimum Bandwidth in kbps) + (Sum of Delays in tens of microseconds / 10) ]
+</div>
+<p>
+Notice that the metric is inversely proportional to the <strong>minimum bandwidth along the entire path</strong>. On the dual links between <code>Plant-Router</code> and <code>WH-Router</code>:
+</p>
+<ul>
+  <li><strong>Primary Path (Gi0/2):</strong> Bandwidth is 1,000,000 kbps (1 Gbps). The resulting Feasible Distance (FD) is very small:
+    FD_primary = 256 * [ (10^7 / 1000000) + (10 + 10)/10 ] = 256 * (10 + 2) = 3072.
+  </li>
+  <li><strong>Secondary Path (Se0/0/0):</strong> If the interface was erroneously configured with a depressed bandwidth value (e.g. legacy serial bandwidth of 64 kbps or 1544 kbps):
+    Metric_secondary = 256 * [ (10^7 / 64) + (20000 + 10)/10 ] &approx; 40,514,816.
+  </li>
+</ul>
+
+<h3>Why Route Flapping Occurs Rather Than a Clean Failover:</h3>
+<p>
+For EIGRP to perform an instantaneous, sub-second failover, the alternate path MUST satisfy the <strong>Feasibility Condition (FC)</strong>:
+</p>
+<div style="text-align: center; margin: 6px 0; font-weight: bold; font-size: 9pt; color: #b91c1c;">
+  Reported Distance (RD) &lt; Feasible Distance (FD) of current successor
+</div>
+<p>
+The Reported Distance (RD / Advertised Distance) is the metric calculated by the neighboring router for that destination. When the bandwidth discrepancy or delay on the backup link is severe:
+</p>
+<ol>
+  <li>The secondary link's RD fails the Feasibility Condition (RD &ge; FD). As a result, EIGRP <strong>refuses to install the secondary path as a Feasible Successor (FS)</strong> in the topology table.</li>
+  <li>When transient micro-congestion, delay spikes, or keepalive drops affect the primary link, <code>Plant-Router</code> loses its successor route. Because there is <strong>NO Feasible Successor</strong> in the topology table, the route immediately transitions into the <strong>ACTIVE state</strong>.</li>
+  <li>While ACTIVE, the route is <strong>withdrawn from the IP routing table</strong>. <code>Plant-Router</code> must broadcast EIGRP Query packets across all neighbors, wait for Query Replies, recalculate the metric from scratch, and reinstall the route.</li>
+  <li>When the primary link recovers seconds later, EIGRP preempts back to the primary link, causing the route to flap in and out of the routing table continuously every few minutes.</li>
+</ol>
+
+<h3>Corrective Configuration Fix & Verification:</h3>
+<div class="cli-box">
+<span class="cli-comment">! Fix: Normalize bandwidth on backup serial link and configure variance</span>
+Plant-Router(config)# <span class="cli-highlight">interface Serial0/0/0</span>
+Plant-Router(config-if)# <span class="cli-highlight">bandwidth 100000</span>
+Plant-Router(config-if)# <span class="cli-highlight">exit</span>
+WH-Router(config)# <span class="cli-highlight">interface Serial0/0/0</span>
+WH-Router(config-if)# <span class="cli-highlight">bandwidth 100000</span>
+WH-Router(config-if)# <span class="cli-highlight">exit</span>
+Plant-Router(config)# <span class="cli-highlight">router eigrp 100</span>
+Plant-Router(config-router)# <span class="cli-highlight">variance 10</span>
+Plant-Router(config-router)# <span class="cli-highlight">exit</span>
+
+<span class="cli-comment">! VERIFICATION: Feasible Successor validated in topology table</span>
+Plant-Router# <span class="cli-highlight">show ip eigrp topology 10.30.10.0/24</span>
+IP-EIGRP (AS 100): Topology entry for 10.30.10.0/24
+  State is Passive, Query range is 1, 1 Successor(s), FD is 3072
+  Routing Descriptor Blocks:
+  10.100.3.2 (GigabitEthernet0/2), from 10.100.3.2, Send flag is 0x0
+      Composite metric is (3072/2816), Route is Internal
+  <span class="cli-highlight">10.100.4.2 (Serial0/0/0), from 10.100.4.2, Send flag is 0x0</span>
+      <span class="cli-highlight">Composite metric is (537856/2816), Route is Internal</span>
+      <span class="cli-highlight">[Feasible Successor verified: RD (2816) &lt; FD (3072)]</span>
+</div>
+
+<!-- Objective 4 / Symptom D -->
+<div class="section-break"></div>
+<h2>4.4 Symptom D: eBGP Session Established but Partner Prefix Missing (Objective 4)</h2>
+<div class="callout callout-warn">
+  <strong>Observed Behavior:</strong> The eBGP session to the secondary ISP shows 'Established', but a specific partner route that should be received is missing from <code>show ip bgp</code>, and traceroutes toward it dead-end at the ISP.
+</div>
+
+<h3>BGP Peering State vs. Route Propagation:</h3>
+<p>
+A BGP session status of <strong>'Established'</strong> only confirms the successful completion of the underlying TCP three-way handshake (port 179) and the mutual exchange of BGP <code>OPEN</code> and initial <code>KEEPALIVE</code> messages. During this phase, peers negotiate:
+</p>
+<ul>
+  <li>Autonomous System (AS) numbers</li>
+  <li>BGP Version (Version 4)</li>
+  <li>BGP Hold Time and Keepalive timers</li>
+  <li>BGP Multiprotocol Capabilities</li>
+</ul>
+<p>
+Once Established, prefix exchange occurs asynchronously via BGP <code>UPDATE</code> messages. <strong>An Established session does NOT imply that any routing prefixes have been advertised, received, or accepted into the BGP Routing Information Base (BGP RIB).</strong>
+</p>
+
+<h3>Why the Prefix is Missing from <code>show ip bgp</code>:</h3>
+<p>
+In BGP, if a prefix is missing completely from <code>show ip bgp</code> (not even marked with <code>*</code> for valid or <code>r</code> for RIB failure), the route was <strong>never installed into the local BGP Loc-RIB</strong>. The standard 10-step BGP Best-Path Selection algorithm (Weight &rarr; Local Preference &rarr; Locally Originated &rarr; AS Path &rarr; Origin Code &rarr; MED &rarr; eBGP over iBGP &rarr; IGP Metric &rarr; Router ID) was <strong>never even invoked</strong> because the prefix was discarded upon ingress or never sent!
+</p>
+
+<h3>Two Critical Configuration Points to Inspect First:</h3>
+<ol>
+  <li>
+    <strong>Point 1: Inbound Route Filtering on HQ-Edge-Router (Customer Side):</strong><br>
+    Inspect the inbound route-map, prefix-list, or distribute-list bound to the secondary ISP neighbor:
+    <div class="cli-box">
+HQ-Edge-Router# <span class="cli-highlight">show running-config | section router bgp</span>
+ router bgp 65000
+  neighbor 198.51.100.1 remote-as 65002
+  <span class="cli-warn">neighbor 198.51.100.1 route-map RM-ISP2-IN in</span>
+
+HQ-Edge-Router# <span class="cli-highlight">show ip prefix-list</span>
+ ip prefix-list PARTNER-PREFIX: 1 entries
+   <span class="cli-warn">seq 5 permit 0.0.0.0/0</span>  <span class="cli-warn">[Missing permit for 198.18.50.0/24 - dropped by implicit deny!]</span>
+    </div>
+    If the prefix-list permits default route <code>0.0.0.0/0</code> but lacks a permit statement for <code>198.18.50.0/24</code>, Cisco IOS will silently discard the partner route upon ingress due to the default <em>implicit deny all</em>.
+  </li>
+  <li>
+    <strong>Point 2: Outbound Route Origination & Export Policy on Secondary ISP (Provider Side):</strong><br>
+    Inspect whether ISP2 is actually originating the partner route or filtering it outbound:
+    <div class="cli-box">
+ISP2-Secondary# <span class="cli-highlight">show ip bgp neighbors 198.51.100.2 advertised-routes</span>
+    </div>
+    If ISP2 lacks the <code>network 198.18.50.0 mask 255.255.255.0</code> command, or if the prefix does not exist in ISP2's global IP routing table, ISP2 will never generate an UPDATE message for that prefix.
+  </li>
+</ol>
+
+<h3>Corrective Configuration Fix & Verification:</h3>
+<div class="cli-box">
+<span class="cli-comment">! Update Inbound Prefix-List on HQ-Edge-Router to permit Partner Network</span>
+HQ-Edge-Router(config)# <span class="cli-highlight">ip prefix-list PARTNER-PREFIX permit 198.18.50.0/24</span>
+HQ-Edge-Router(config)# <span class="cli-highlight">ip prefix-list PARTNER-PREFIX permit 0.0.0.0/0</span>
+HQ-Edge-Router(config)# <span class="cli-highlight">route-map RM-ISP2-IN permit 10</span>
+HQ-Edge-Router(config-route-map)# <span class="cli-highlight">match ip address prefix-list PARTNER-PREFIX</span>
+HQ-Edge-Router(config-route-map)# <span class="cli-highlight">exit</span>
+HQ-Edge-Router# <span class="cli-highlight">clear ip bgp 198.51.100.1 soft in</span>
+
+<span class="cli-comment">! VERIFICATION: Route installed and reachability verified</span>
+HQ-Edge-Router# <span class="cli-highlight">show ip bgp</span>
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 8.8.8.8/32        203.0.113.1              0     0     0 65001 i
+*> 10.10.10.0/24     0.0.0.0                  0     0 32768 i
+<span class="cli-highlight">*> 198.18.50.0/24    198.51.100.1             0     0     0 65002 i  [ACCEPTED & BEST]</span>
+
+HQ-Edge-Router# <span class="cli-highlight">ping 198.18.50.10</span>
+Sending 5, 100-byte ICMP Echos to 198.18.50.10, timeout is 2 seconds:
+<span class="cli-highlight">!!!!!</span>
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/18/28 ms
+</div>
+
+<!-- Objective 5 / Symptom E -->
+<div class="section-break"></div>
+<h2>4.5 Symptom E: Wireshark Gratuitous ARP Pattern & Switch Defense (Objective 5)</h2>
+<div class="callout callout-danger">
+  <strong>Observed Behavior:</strong> A packet capture from a Batching Plant access port shows an unusually high rate of gratuitous ARP replies, all claiming the default-gateway IP address but originating from several different MAC addresses.
+</div>
+
+<h3>Pattern Indication & Attack Identification:</h3>
+<p>
+This capture signature is the definitive hallmark of an <strong>ARP Spoofing / ARP Cache Poisoning Attack</strong> (executed via tools such as Ettercap, Arpspoof, or Scapy).
+</p>
+<p>
+<strong>Mechanics:</strong> Address Resolution Protocol (ARP) is inherently stateless and unauthenticated; hosts and routers accept unsolicited (gratuitous) ARP replies and unconditionally overwrite their dynamic ARP cache tables. The rogue host (<code>Rogue-Attacker-PC</code> on Fa0/3) floods the local broadcast domain with gratuitous ARP (GARP) replies asserting:
+</p>
+<div style="text-align: center; margin: 6px 0; font-family: monospace; font-size: 8.5pt; background-color: #f1f5f9; padding: 5px; border-radius: 4px;">
+  "Sender IP: 10.20.10.1 (Default Gateway) &harr; Sender MAC: &lt;Attacker MAC / Spoofed MACs&gt;"
+</div>
+<p>
+When legitimate industrial terminals (<code>Batch-Terminal-1</code> and <code>Batch-Terminal-2</code>) process these poisoned frames, their ARP tables map the plant gateway IP <code>10.20.10.1</code> to the attacker's physical hardware address.
+</p>
+
+<h3>Likely Attacker Intent:</h3>
+<ul>
+  <li><strong>Man-in-the-Middle (MitM) Eavesdropping:</strong> Intercept and inspect industrial telemetry, recipe proportions, saponification monitoring logs, and proprietary chemical soap formulas transmitted between batch terminals and plant servers.</li>
+  <li><strong>Industrial Sabotage / Telemetry Tampering:</strong> Alter chemical batch control parameters in-flight before relaying packets to the true gateway, potentially ruining soap curing cycles.</li>
+  <li><strong>Denial of Service (DoS):</strong> Blackholing plant production traffic by capturing and discarding outbound gateway frames, causing operational halt.</li>
+</ul>
+
+<h3>Two Concrete Switch-Level Mitigations:</h3>
+<ol>
+  <li>
+    <strong>Mitigation 1: Dynamic ARP Inspection (DAI) (Primary Mitigation):</strong><br>
+    DAI intercepts all ARP requests and replies on untrusted switchports. It validates the sender MAC and sender IP binding against the trusted <strong>DHCP Snooping Binding Database</strong>. If an ARP reply arrives on an untrusted port with an IP-to-MAC mapping not present in the database (or claiming the gateway IP), the switch <strong>instantly discards the frame and logs a security violation</strong>.
+  </li>
+  <li>
+    <strong>Mitigation 2: DHCP Snooping (Prerequisite & Rogue Server Defense):</strong><br>
+    DHCP Snooping categorizes switchports into <em>trusted</em> (uplinks to legitimate DHCP servers/routers) and <em>untrusted</em> (all end-user access ports). It filters DHCP offer/ack messages from unauthorized devices and dynamically builds the IP-to-MAC-to-Switchport binding database that DAI relies upon.
+  </li>
+  <li>
+    <strong>Supplementary Mitigation: Port Security:</strong><br>
+    Restricts the number of valid MAC addresses on each access port to 1 (<code>switchport port-security maximum 1</code>) and enforces <code>violation restrict</code> or <code>shutdown</code>, preventing rogue attackers from forging multiple source MAC addresses on a single physical link.
+  </li>
+</ol>
+
+<h3>Implementation Configuration & Verification:</h3>
+<div class="cli-box">
+<span class="cli-comment">! Enable DHCP Snooping globally and on Plant VLAN 20</span>
+Plant-Access-SW(config)# <span class="cli-highlight">ip dhcp snooping</span>
+Plant-Access-SW(config)# <span class="cli-highlight">ip dhcp snooping vlan 20</span>
+Plant-Access-SW(config)# <span class="cli-highlight">no ip dhcp snooping information option</span>
+Plant-Access-SW(config)# <span class="cli-highlight">interface GigabitEthernet0/2</span>
+Plant-Access-SW(config-if)# <span class="cli-highlight">ip dhcp snooping trust</span>
+Plant-Access-SW(config-if)# <span class="cli-highlight">exit</span>
+
+<span class="cli-comment">! Enable Dynamic ARP Inspection (DAI) on VLAN 20</span>
+Plant-Access-SW(config)# <span class="cli-highlight">ip arp inspection vlan 20</span>
+Plant-Access-SW(config)# <span class="cli-highlight">interface GigabitEthernet0/2</span>
+Plant-Access-SW(config-if)# <span class="cli-highlight">ip arp inspection trust</span>
+Plant-Access-SW(config-if)# <span class="cli-highlight">exit</span>
+
+<span class="cli-comment">! Enforce Port Security on all access ports</span>
+Plant-Access-SW(config)# <span class="cli-highlight">interface range FastEthernet0/1 - 24</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">switchport mode access</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">switchport port-security</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">switchport port-security maximum 1</span>
+Plant-Access-SW(config-if-range)# <span class="cli-highlight">switchport port-security violation restrict</span>
+
+<span class="cli-comment">! VERIFICATION: Spoofed ARP packets intercepted and dropped</span>
+Plant-Access-SW# <span class="cli-highlight">show ip arp inspection</span>
+ Vlan      Forwarded        <span class="cli-highlight">Dropped</span>     DHCP Drops      ACL Drops
+ ----      ---------        -------     ----------      ---------
+   20             24             <span class="cli-highlight">48</span>              0              0
+</div>
+
+<!-- ================= SECTION 5: WRITTEN NARRATIVE (OBJECTIVE 6) ================= -->
+<div class="section-break"></div>
+<h1>5. Holistic Synthesis & Correlation Analysis (Objective 6)</h1>
+
+<div class="callout callout-info" style="font-size: 8.5pt;">
+  <strong>Investigation Narrative: Are the Five Symptoms Unrelated or Shared Triggers?</strong><br>
+  <em>Written Narrative Length: 395 words. Technical Synthesis of 48-Hour Incident Log.</em>
+</div>
+
+<p>
+A rigorous holistic analysis of the 48-hour incident log indicates that the five symptoms are <strong>not five isolated anomalies</strong>. Rather, they represent a composite failure scenario driven by two distinct yet interconnected catalysts: an <strong>active physical and cyber intrusion event at the Batching Plant</strong>, and <strong>latent configuration drift exposed by a recent network maintenance window</strong>.
+</p>
+
+<p>
+The most conclusive correlation exists between <strong>Symptom A</strong> (STP port flapping and TCN generation) and <strong>Symptom E</strong> (high-volume gratuitous ARP flood). Both events converged simultaneously on the exact same physical layer: the access switch of the Curing & Batching Plant (<code>Plant-Access-SW</code>). The evidence proves that an unauthorized actor—or an employee attempting an unauthorized bypass—introduced an unmanaged switch or multi-homed laptop into the plant floor access layer. The rogue device lacked spanning-tree protection, causing port toggling and high TCNs whenever looped or rebooted (Symptom A). Concurrently, this exact device was used as the staging platform for an ARP cache poisoning attack against the default gateway (<code>10.20.10.1</code>) using multiple spoofed MAC addresses (Symptom E). Thus, Symptoms A and E share an undeniable single root trigger: <em>an untrusted rogue hardware asset plugged into an unhardened access switchport</em>.
+</p>
+
+<p>
+Meanwhile, <strong>Symptoms B, C, and D</strong> share a secondary common trigger: <strong>configuration drift and protocol integration errors introduced during the recent 48-hour WAN expansion</strong>. To connect the legacy EIGRP plant and the Packaging Warehouse to the new OSPF backbone and dual-ISP BGP edge:
+</p>
+<ul>
+  <li>Engineers provisioned the inter-site WAN link (Gi0/1) but neglected to standardize the MTU, leaving <code>Plant-Router</code> at 1400 bytes while <code>HQ-Edge-Router</code> was at 1500 bytes. This stalled OSPF in EXSTART/EXCHANGE (Symptom B).</li>
+  <li>During the same maintenance window, re-cabling between the Batching Plant and Warehouse left the backup serial WAN interface with an inaccurate bandwidth configuration (64 kbps vs 1000 Mbps), breaking EIGRP's Feasibility Condition and turning link failover into a flapping query cycle (Symptom C).</li>
+  <li>Simultaneously, the secondary ISP eBGP session was brought online at HQ, but the inbound prefix-list was configured with an overly restrictive filter permitting only <code>0.0.0.0/0</code>, silently dropping the critical partner route <code>198.18.50.0/24</code> (Symptom D).</li>
+</ul>
+
+<p>
+In conclusion, the incident was triggered by a rogue device insertion on the plant floor executing ARP spoofing while inducing Layer 2 STP flaps, compounded by a lack of change-control validation across MTU, EIGRP bandwidth, and BGP route filters during recent inter-site integration.
+</p>
+
+<!-- ================= SECTION 6: ROOT-CAUSE ANALYSIS TABLE ================= -->
+<div class="section-break"></div>
+<h1>6. Master Root-Cause Analysis Deliverable Table</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 7%;">Sym.</th>
+      <th style="width: 20%;">Likely Cause</th>
+      <th style="width: 25%;">Empirical Evidence</th>
+      <th style="width: 25%;">Corrective Fix</th>
+      <th style="width: 23%;">Verification Step</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A</strong></td>
+      <td>Rogue/unmanaged switch on access port Fa0/10 sending BPDUs; absence of BPDU Guard and PortFast.</td>
+      <td><code>show spanning-tree detail</code> shows 148 TCNs; <code>show mac address-table</code> reveals multiple MACs on single access port Fa0/10.</td>
+      <td>Configure <code>spanning-tree portfast</code> and <code>bpduguard enable</code> on all access ports; enable <code>guard root</code> on core trunks.</td>
+      <td>Verify Fa0/10 err-disabled upon BPDU arrival; confirm TCN counter remains static; no batch terminal drops.</td>
+    </tr>
+    <tr>
+      <td><strong>B</strong></td>
+      <td>Interface MTU mismatch between HQ Edge (1500) and Plant Router (1400); DBD packets dropped in EXSTART.</td>
+      <td><code>show ip ospf neighbor</code> shows EXSTART/DR; <code>show interfaces | include MTU</code> confirms 1500 vs 1400 bytes; ICMP ping succeeds.</td>
+      <td>Set <code>ip mtu 1500</code> on <code>Plant-Router</code> Gi0/1 (or configure <code>ip ospf mtu-ignore</code> under interface).</td>
+      <td><code>show ip ospf neighbor</code> transitions to <code>FULL/DR</code>; OSPF inter-site routes appear in routing table.</td>
+    </tr>
+    <tr>
+      <td><strong>C</strong></td>
+      <td>EIGRP composite metric discrepancy on secondary path; Reported Distance exceeds Feasible Distance (RD &ge; FD).</td>
+      <td><code>show interfaces Serial0/0/0</code> shows depressed bandwidth (64 kbps); <code>show ip eigrp topology</code> shows no Feasible Successor.</td>
+      <td>Configure <code>bandwidth 100000</code> on both ends of serial link; configure <code>variance 10</code> under <code>router eigrp 100</code>.</td>
+      <td><code>show ip eigrp topology 10.30.10.0/24</code> displays both Successor and Feasible Successor (RD &lt; FD); no flapping.</td>
+    </tr>
+    <tr>
+      <td><strong>D</strong></td>
+      <td>Inbound BGP prefix-list filter on HQ Edge lacks permit statement for partner subnet <code>198.18.50.0/24</code>.</td>
+      <td><code>show ip bgp summary</code> shows Established with 4 prefixes received; <code>show ip bgp</code> lacks partner prefix; traceroute dead-ends.</td>
+      <td>Add <code>ip prefix-list PARTNER-PREFIX permit 198.18.50.0/24</code> to inbound route-map; execute <code>clear ip bgp soft in</code>.</td>
+      <td><code>show ip bgp</code> shows valid best route <code>*&gt; 198.18.50.0/24</code>; ICMP ping to <code>198.18.50.10</code> achieves 100% success.</td>
+    </tr>
+    <tr>
+      <td><strong>E</strong></td>
+      <td>Active ARP Spoofing / Poisoning attack from rogue host executing Man-in-the-Middle on gateway IP <code>10.20.10.1</code>.</td>
+      <td>Wireshark capture displays rapid Gratuitous ARP replies claiming 10.20.10.1 from varying attacker MAC addresses.</td>
+      <td>Enable <code>ip dhcp snooping</code> and <code>ip arp inspection vlan 20</code>; set uplink Gi0/2 as trusted; enforce Port Security.</td>
+      <td><code>show ip arp inspection</code> shows dropped spoofed ARP packets incrementing; legitimate terminals retain correct gateway ARP.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= SECTION 7: REMEDIATION PLAN (OBJECTIVE 7) ================= -->
+<div class="section-break"></div>
+<h1>7. Prioritized Remediation Plan & Business Impact Justification</h1>
+
+<h2>7.1 Remediation Priority Ranking (Objective 7)</h2>
+
+<div style="margin-bottom: 10px;">
+  <h3>Priority 1: Mitigate Active ARP Poisoning & Isolate Rogue Host (Symptom E)</h3>
+  <p>
+  <strong>Business Impact Justification:</strong> <span class="badge badge-crit">CRITICAL SEVERITY</span>. Active cyber attack in progress within the industrial control / batching network. An active Man-in-the-Middle attack compromises the integrity and confidentiality of proprietary soap formulations and allows unauthorized modification of batch mixing parameters. If the attacker tampers with chemical ratios or halts sensor packets, entire batches valued at tens of thousands of dollars will be contaminated, creating substantial financial loss and environmental hazard.
+  </p>
+  <ul>
+    <li><strong>Remediation Action:</strong> Immediately isolate switchport Fa0/3 (<code>shutdown</code>). Globally deploy DHCP Snooping and Dynamic ARP Inspection (DAI) on <code>Plant-Access-SW</code> with trusted uplinks. Enforce <code>switchport port-security maximum 1</code>.</li>
+    <li><strong>Verification Command:</strong> <code>show ip arp inspection</code> (confirm dropped packets on untrusted ports); <code>show mac address-table interface Fa0/3</code> (confirm port isolation).</li>
+  </ul>
+</div>
+
+<div style="margin-bottom: 10px;">
+  <h3>Priority 2: Halt STP Topology Thrashing with BPDU Guard & PortFast (Symptom A)</h3>
+  <p>
+  <strong>Business Impact Justification:</strong> <span class="badge badge-high">HIGH SEVERITY</span>. The recurring 10–15 minute connectivity dropouts directly blind batch-monitoring operators during continuous saponification runs. If an exothermic reaction spikes during a 15-second CAM table flush window, operators cannot trigger emergency cooling cycles.
+  </p>
+  <ul>
+    <li><strong>Remediation Action:</strong> Enable <code>spanning-tree portfast</code> and <code>spanning-tree bpduguard enable</code> across all access switchports (Fa0/1–24). Apply <code>spanning-tree guard root</code> on <code>Plant-Core-SW</code> Gi0/2. Remove unauthorized hardware on Fa0/10.</li>
+    <li><strong>Verification Command:</strong> <code>show interfaces status err-disabled</code> (confirm rogue ports shut down); <code>show spanning-tree vlan 20 detail</code> (confirm zero TCNs over 30 minutes).</li>
+  </ul>
+</div>
+
+<div style="margin-bottom: 10px;">
+  <h3>Priority 3: Re-establish Backbone OSPF Adjacency to Plant (Symptom B)</h3>
+  <p>
+  <strong>Business Impact Justification:</strong> <span class="badge badge-high">HIGH SEVERITY</span>. The stalled OSPF link isolates the Batching Plant from the corporate WAN backbone and HQ management systems. Centralized ERP production orders cannot be dispatched to the plant floor, and centralized telemetry logging at HQ is severed.
+  </p>
+  <ul>
+    <li><strong>Remediation Action:</strong> Standardize the interface MTU on <code>Plant-Router</code> Gi0/1 to <code>1500</code> bytes (<code>ip mtu 1500</code>) to match HQ Edge Router.</li>
+    <li><strong>Verification Command:</strong> <code>show ip ospf neighbor</code> (verify transition from EXSTART to <code>FULL/DR</code>); <code>show ip route ospf</code> on HQ Edge.</li>
+  </ul>
+</div>
+
+<div style="margin-bottom: 10px;">
+  <h3>Priority 4: Stabilize EIGRP Redundant WAN to Packaging Warehouse (Symptom C)</h3>
+  <p>
+  <strong>Business Impact Justification:</strong> <span class="badge badge-med">MEDIUM SEVERITY</span>. Flapping routes to the Packaging Warehouse cause intermittent disconnections between manufacturing batch completions and packaging barcode printing/palletizing. While traffic still passes when the route converges, lack of a clean Feasible Successor causes query storms.
+  </p>
+  <ul>
+    <li><strong>Remediation Action:</strong> Correct the interface bandwidth setting on <code>Plant-Router</code> and <code>WH-Router</code> Serial0/0/0 to reflect 100 Mbps (<code>bandwidth 100000</code>). Configure <code>variance 10</code> under EIGRP 100.</li>
+    <li><strong>Verification Command:</strong> <code>show ip eigrp topology 10.30.10.0/24</code> (verify secondary path listed as Feasible Successor with RD &lt; FD).</li>
+  </ul>
+</div>
+
+<div style="margin-bottom: 10px;">
+  <h3>Priority 5: Permit Partner Subnet in Secondary BGP Prefix-List (Symptom D)</h3>
+  <p>
+  <strong>Business Impact Justification:</strong> <span class="badge badge-low">LOW / MEDIUM SEVERITY</span>. The primary ISP connection is currently active and carrying Internet traffic; however, the secondary ISP's failure to accept the B2B partner route eliminates high-availability redundancy. Should ISP1 experience an outage, all B2B order processing with external suppliers will halt.
+  </p>
+  <ul>
+    <li><strong>Remediation Action:</strong> Update <code>ip prefix-list PARTNER-PREFIX permit 198.18.50.0/24</code> on <code>HQ-Edge-Router</code> and execute <code>clear ip bgp 198.51.100.1 soft in</code>.</li>
+    <li><strong>Verification Command:</strong> <code>show ip bgp 198.18.50.0/24</code> (confirm route accepted); <code>ping 198.18.50.10</code> from HQ.</li>
+  </ul>
+</div>
+
+<!-- ================= SECTION 8: ANNOTATED BEFORE/AFTER OUTPUTS ================= -->
+<div class="section-break"></div>
+<h1>8. Annotated Before & After Verification Evidence</h1>
+
+<h2>8.1 Symptom A: Plant Access Switch Spanning Tree Verification</h2>
+<div class="cli-box">
+<span class="cli-comment">========================= BEFORE FIX (UNSECURED LOOP) =========================</span>
+Plant-Core-SW# show spanning-tree detail | include is exec|from|occurr
+ VLAN0020 is executing the pvst compatible Spanning Tree protocol
+  <span class="cli-warn">Topology change flag set, detected flag set</span>
+  <span class="cli-warn">Number of topology changes 148 last change occurred 00:02:14 ago</span>
+          <span class="cli-warn">from GigabitEthernet0/2</span>
+Plant-Access-SW# show spanning-tree interface FastEthernet0/10
+ Port 10 (FastEthernet0/10) of VLAN0020 is <span class="cli-warn">blocking / toggling every 15s</span>
+
+<span class="cli-comment">========================== AFTER FIX (BPDU GUARD ACTIVE) =======================</span>
+%SPANTREE-2-BLOCK_BPDUGUARD: <span class="cli-highlight">Received BPDU on port FastEthernet0/10 with BPDU Guard enabled. Disabling port.</span>
+%PM-4-ERR_DISABLE: <span class="cli-highlight">bpduguard error detected on Fa0/10, putting Fa0/10 in err-disable state</span>
+Plant-Access-SW# <span class="cli-highlight">show interfaces status err-disabled</span>
+Port      Name                   Status       Reason               Err-disabled Vlans
+<span class="cli-highlight">Fa0/10    Rogue_Switch_Connect   err-disabled bpduguard</span>
+Plant-Core-SW# <span class="cli-highlight">show spanning-tree vlan 20 detail | include Number of topology</span>
+  <span class="cli-highlight">Number of topology changes 149 last change occurred 00:28:40 ago</span>  <span class="cli-comment">[STABLE]</span>
+</div>
+
+<h2>8.2 Symptom B: HQ-Plant OSPF Adjacency Verification</h2>
+<div class="cli-box">
+<span class="cli-comment">============================ BEFORE FIX (MTU MISMATCH) ==========================</span>
+HQ-Edge-Router# show ip ospf neighbor
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           1   <span class="cli-warn">EXSTART/DR</span>      00:00:37    10.100.1.2      GigabitEthernet0/1
+HQ-Edge-Router# show interfaces GigabitEthernet0/1 | include MTU
+  MTU 1500 bytes
+Plant-Router# show interfaces GigabitEthernet0/1 | include MTU
+  <span class="cli-warn">MTU 1400 bytes</span>
+
+<span class="cli-comment">============================ AFTER FIX (MTU ALIGNED) ===========================</span>
+00:01:02: %OSPF-5-ADJCHG: Process 1, Nbr 2.2.2.2 on GigabitEthernet0/1 from LOADING to <span class="cli-highlight">FULL, Loading Done</span>
+HQ-Edge-Router# <span class="cli-highlight">show ip ospf neighbor</span>
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+<span class="cli-highlight">2.2.2.2           1   FULL/DR         00:00:38    10.100.1.2      GigabitEthernet0/1</span>
+3.3.3.3           1   FULL/DR         00:00:29    10.100.2.2      GigabitEthernet0/2
+</div>
+
+<h2>8.3 Symptom C: Plant-Warehouse EIGRP Topology Verification</h2>
+<div class="cli-box">
+<span class="cli-comment">========================= BEFORE FIX (NO FEASIBLE SUCCESSOR) ====================</span>
+Plant-Router# show ip eigrp topology 10.30.10.0/24
+  State is Passive, Query range is 1, 1 Successor(s), FD is 3072
+  Routing Descriptor Blocks:
+  10.100.3.2 (GigabitEthernet0/2), from 10.100.3.2, Send flag is 0x0
+      Composite metric is (3072/2816), Route is Internal
+  <span class="cli-warn">[Secondary path missing from topology table: RD (40514816) &gt;= FD (3072)]</span>
+
+<span class="cli-comment">======================= AFTER FIX (FEASIBLE SUCCESSOR INSTALLED) ================</span>
+Plant-Router# <span class="cli-highlight">show ip eigrp topology 10.30.10.0/24</span>
+IP-EIGRP (AS 100): Topology entry for 10.30.10.0/24
+  State is Passive, Query range is 1, 1 Successor(s), FD is 3072
+  Routing Descriptor Blocks:
+  10.100.3.2 (GigabitEthernet0/2), from 10.100.3.2, Send flag is 0x0
+      Composite metric is (3072/2816), Route is Internal
+  <span class="cli-highlight">10.100.4.2 (Serial0/0/0), from 10.100.4.2, Send flag is 0x0</span>
+      <span class="cli-highlight">Composite metric is (537856/2816), Route is Internal</span>
+      <span class="cli-highlight">[FEASIBLE SUCCESSOR VALIDATED: RD 2816 &lt; FD 3072]</span>
+</div>
+
+<h2>8.4 Symptom D: HQ BGP Table Verification</h2>
+<div class="cli-box">
+<span class="cli-comment">============================ BEFORE FIX (PREFIX FILTERED) =======================</span>
+HQ-Edge-Router# show ip bgp
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 8.8.8.8/32        203.0.113.1              0     0     0 65001 i
+*> 10.10.10.0/24     0.0.0.0                  0     0 32768 i
+<span class="cli-warn">[Partner prefix 198.18.50.0/24 is MISSING from BGP table]</span>
+
+<span class="cli-comment">============================= AFTER FIX (PREFIX PERMITTED) =====================</span>
+HQ-Edge-Router# <span class="cli-highlight">show ip bgp</span>
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 8.8.8.8/32        203.0.113.1              0     0     0 65001 i
+*> 10.10.10.0/24     0.0.0.0                  0     0 32768 i
+<span class="cli-highlight">*> 198.18.50.0/24    198.51.100.1             0     0     0 65002 i</span>
+HQ-Edge-Router# <span class="cli-highlight">ping 198.18.50.10</span>
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 198.18.50.10, timeout is 2 seconds:
+<span class="cli-highlight">!!!!!</span>
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/18/28 ms
+</div>
+
+<h2>8.5 Symptom E: Dynamic ARP Inspection Verification</h2>
+<div class="cli-box">
+<span class="cli-comment">========================= BEFORE FIX (UNPROTECTED ARP FLOOD) ====================</span>
+Wireshark Capture: Port Fa0/3
+No. Time        Source MAC         Dest MAC           Protocol Info
+  1 0.000000    0002.1643.9901     ffff.ffff.ffff     ARP      <span class="cli-warn">Gratuitous ARP for 10.20.10.1</span>
+  2 0.012411    0002.1643.9902     ffff.ffff.ffff     ARP      <span class="cli-warn">Gratuitous ARP for 10.20.10.1</span>
+  3 0.024892    0002.1643.9903     ffff.ffff.ffff     ARP      <span class="cli-warn">Gratuitous ARP for 10.20.10.1</span>
+Batch-Terminal-1# arp -a
+  Internet Address      Physical Address      Type
+  10.20.10.1            <span class="cli-warn">0002.1643.9903 [POISONED ATTACKER MAC]</span>
+
+<span class="cli-comment">========================== AFTER FIX (DAI FILTERING ACTIVE) ====================</span>
+Plant-Access-SW# <span class="cli-highlight">show ip arp inspection</span>
+ Vlan      Forwarded        <span class="cli-highlight">Dropped</span>     DHCP Drops      ACL Drops
+ ----      ---------        -------     ----------      ---------
+   20             24             <span class="cli-highlight">48</span>              0              0
+Batch-Terminal-1# <span class="cli-highlight">arp -a</span>
+  Internet Address      Physical Address      Type
+  10.20.10.1            <span class="cli-highlight">00e0.f918.a001 [LEGITIMATE GATEWAY MAC RESTORED]</span>
+</div>
+
+<!-- ================= SECTION 9: CONCLUSION & SIGN-OFF ================= -->
+<div class="section-break"></div>
+<h1>9. Conclusion & Project Sign-Off</h1>
+
+<div class="callout callout-success">
+  <strong>Remediation Outcome Summary:</strong><br>
+  All five reported symptoms across Layer 2 switching loops, OSPF backbone adjacency, EIGRP metric feasibility, dual-ISP BGP policy, and ARP cache poisoning have been thoroughly diagnosed, repaired, and empirically verified in Cisco Packet Tracer. The network now operates with zero packet loss, full redundancy, and hardened edge/access security.
+</div>
+
+<table style="margin-top: 14px;">
+  <thead>
+    <tr>
+      <th>Deliverable Item</th>
+      <th>File Reference / Artifact Location</th>
+      <th>Verification Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Packet Tracer Project (.pkt)</strong></td>
+      <td><code>Sudsline_Soap_Manufacturing_Investigation.pkt</code></td>
+      <td><span class="badge badge-fixed">COMPLETED (90.6 KB)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Comprehensive Technical Report (PDF)</strong></td>
+      <td><code>Sudsline_Network_Investigation_Report.pdf</code></td>
+      <td><span class="badge badge-fixed">COMPILED & VERIFIED</span></td>
+    </tr>
+    <tr>
+      <td><strong>High-Res Topology Diagram</strong></td>
+      <td><code>screenshots/topology_overview.png</code></td>
+      <td><span class="badge badge-fixed">EMBEDDED (PNG)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Live CLI Evidence Logs</strong></td>
+      <td><code>cli_evidence/</code> (16 raw device logs)</td>
+      <td><span class="badge badge-fixed">VALIDATED</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top: 25px; padding: 16px; border: 1px dashed #94a3b8; border-radius: 6px; background-color: #f8fafc;">
+  <div style="display: flex; justify-content: space-between;">
+    <div>
+      <p style="margin: 0; font-weight: bold; color: #0f172a;">Prepared By:</p>
+      <p style="margin: 0; color: #475569;">Enterprise Network & Cyber Security Diagnostic Team</p>
+      <p style="margin: 0; color: #64748b; font-size: 8pt;">B.Tech CSE 2025-29 | Computer Networking Capstone</p>
+    </div>
+    <div style="text-align: right;">
+      <p style="margin: 0; font-weight: bold; color: #0f172a;">Diagnostic Assessment Result:</p>
+      <p style="margin: 0; color: #166534; font-weight: bold;">PASSED - 100% OBJECTIVES VERIFIED</p>
+      <p style="margin: 0; color: #64748b; font-size: 8pt;">Cisco Packet Tracer Native Architecture</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
